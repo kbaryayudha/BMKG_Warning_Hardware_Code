@@ -49,7 +49,7 @@ void database_setup() {
     }
     delay(5000);
  
-    Serial.print("Local IP : ");
+    Serial.print("Local IP: ");
     Serial.println(Ethernet.localIP());
     Serial.print("Subnet Mask : ");
     Serial.println(Ethernet.subnetMask());
