@@ -6,12 +6,12 @@ IPAddress server(54,252,196,141);
 
 #define inet 2
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0x7D, 0xAB, 0xFB };
  
 #define MYIPADDR 192,168,1,28
 #define MYIPMASK 255,255,255,0
 #define MYDNS 192,168,1,1
-#define MYGW 192,168,1,1
+#define MYGW 192,168,1,1 
 
 EthernetClient client;
 
@@ -19,6 +19,7 @@ unsigned long beginMicros, endMicros, byteCount = 0, currentMillis, previousMill
 bool printWebData = true, i = false;
 float seconds, rate;
 int len;
+bool data_0_hardware, data_1_hardware, data_2_hardware;
 
 void database_setup() {
     pinMode(inet,OUTPUT);
@@ -93,7 +94,7 @@ void database_loop() {
             previousMillis = currentMillis;
             if(i==false) {
                 digitalWrite(inet,HIGH);
-                client.println("GET /api/v1/esp32/siren-activator?province=daerah_istimewa_yogyakarta&site=tower_glagah HTTP/1.1");
+                client.println("GET /api/v1/esp32/get-state-kulon-progo HTTP/1.1");
                 client.println("Host: 54.252.196.141");
                 client.println("Connection: close");
                 client.println();
@@ -114,7 +115,7 @@ void database_loop() {
                     return;
                 }
 
-                StaticJsonDocument<384> doc;
+                StaticJsonDocument<512> doc;
 
                 ReadBufferingStream bufferedFile(client, 64);
                 DeserializationError error = deserializeJson(doc, bufferedFile);
@@ -128,21 +129,38 @@ void database_loop() {
                 int status_code = doc["status_code"];
                 const char* message = doc["message"];
 
-                JsonObject data_daerah_istimewa_yogyakarta_tower_glagah = doc["data"]["daerah_istimewa_yogyakarta"]["tower_glagah"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_real = data_daerah_istimewa_yogyakarta_tower_glagah["real"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_spare = data_daerah_istimewa_yogyakarta_tower_glagah["spare"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_test = data_daerah_istimewa_yogyakarta_tower_glagah["test"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_voice = data_daerah_istimewa_yogyakarta_tower_glagah["voice"];
-                
-                Serial.println("Siren Activator");
-                Serial.print("real  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_real);
-                Serial.print("test  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_test);
-                Serial.print("voice : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_voice);
-                Serial.print("spare : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_spare);
+                JsonArray data = doc["data"];
+
+                JsonObject data_0 = data[0];
+                data_0_hardware = data_0["hardware"]; // true
+                bool data_0_real = data_0["real"]; // false
+                bool data_0_test = data_0["test"]; // false
+                bool data_0_voice = data_0["voice"]; // false
+                const char* data_0_site = data_0["site"]; // "mobile_kulonProgo"
+
+                JsonObject data_1 = data[1];
+                data_1_hardware = data_1["hardware"]; // true
+                bool data_1_real = data_1["real"]; // false
+                bool data_1_spare = data_1["spare"]; // false
+                bool data_1_test = data_1["test"]; // false
+                bool data_1_voice = data_1["voice"]; // false
+                const char* data_1_site = data_1["site"]; // "tower_glagah"
+
+                JsonObject data_2 = data[2];
+                data_2_hardware = data_2["hardware"]; // true
+                bool data_2_real = data_2["real"]; // false
+                bool data_2_spare = data_2["spare"]; // false
+                bool data_2_test = data_2["test"]; // false
+                bool data_2_voice = data_2["voice"]; // false
+                const char* data_2_site = data_2["site"]; // "tower_underpassYIA"
+
+                Serial.println("Hardware Permissions");
+                Serial.print("mobile_kulonProgo  : ");
+                Serial.println(data_0_hardware);
+                Serial.print("tower_glagah       : ");
+                Serial.println(data_1_hardware);
+                Serial.print("tower_underpassYIA : ");
+                Serial.println(data_2_hardware);
                 Serial.println();
                 client.stop();
                 delay(1);
@@ -151,10 +169,34 @@ void database_loop() {
                 i = true;
             } else {
                 digitalWrite(inet,HIGH);
-                client.println("POST /api/v1/esp32/send-state-kulon-progo?&real="+d1_value+"&test="+d0_value+"&spare="+a1_value+"&voice="+a0_value+" HTTP/1.1");
-                client.println("Host: 54.252.196.141");
-                client.println("Connection: close");
-                client.println();
+
+                if(data_0_hardware==1 && data_1_hardware==1 && data_2_hardware==1) {
+                    client.println("POST /api/v1/esp32/send-state-kulon-progo?&real="+d1_value+"&test="+d0_value+"&spare="+a1_value+"&voice="+a0_value+" HTTP/1.1");
+                    client.println("Host: 54.252.196.141");
+                    client.println("Connection: close");
+                    client.println();
+                }
+
+                if(data_0_hardware==1 && data_1_hardware==0 && data_2_hardware==0) {
+                    client.println("POST /api/v1/esp32/send-state?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo&real="+d1_value+"&test="+d0_value+"&spare="+a1_value+"&voice="+a0_value+" HTTP/1.1");
+                    client.println("Host: 54.252.196.141");
+                    client.println("Connection: close");
+                    client.println();
+                }
+
+                if(data_0_hardware==0 && data_1_hardware==1 && data_2_hardware==0) {
+                    client.println("POST /api/v1/esp32/send-state?province=daerah_istimewa_yogyakarta&site=tower_glagah&real="+d1_value+"&test="+d0_value+"&spare="+a1_value+"&voice="+a0_value+" HTTP/1.1");
+                    client.println("Host: 54.252.196.141");
+                    client.println("Connection: close");
+                    client.println();
+                }
+
+                if(data_0_hardware==0 && data_1_hardware==0 && data_2_hardware==1) {
+                    client.println("POST /api/v1/esp32/send-state?province=daerah_istimewa_yogyakarta&site=tower_underpassYIA&real="+d1_value+"&test="+d0_value+"&spare="+a1_value+"&voice="+a0_value+" HTTP/1.1");
+                    client.println("Host: 54.252.196.141");
+                    client.println("Connection: close");
+                    client.println();
+                }
                 i = false;
             }
         }
