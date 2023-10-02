@@ -11,7 +11,7 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0x7D, 0xAB, 0xFB };
 #define MYIPADDR 192,168,1,28
 #define MYIPMASK 255,255,255,0
 #define MYDNS 192,168,1,1
-#define MYGW 192,168,1,1 
+#define MYGW 192,168,1,1
 
 EthernetClient client;
 
