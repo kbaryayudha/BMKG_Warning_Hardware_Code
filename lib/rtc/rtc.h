@@ -19,6 +19,8 @@ void rtc_setup() {
         }
     }
 
+    // DS1307_RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
+
     if(year()>=2023) DS1307_RTC.adjust(DateTime(year(), month(), day(), hour(), minute(), second()));
 }
 

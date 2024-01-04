@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Ethernet.h>
+#include <SSLClient.h>
+#include "trust_anchors.h"
 #include <bmkg_time.h>
 #include <rtc.h>
 #include <temp.h>

@@ -1,7 +1,7 @@
 #include <EthernetUdp.h>
 #include <TimeLib.h>
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xF9, 0xD9, 0x04 };
  
 #define MYIPADDR 192,168,1,28
 #define MYIPMASK 255,255,255,0
