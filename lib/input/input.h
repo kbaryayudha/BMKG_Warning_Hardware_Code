@@ -1,39 +1,29 @@
-#define a0 34
-#define a1 35
-#define d0 16
-#define d1 17
+#define test 34
+#define real 35
 
-String a0_value, a1_value, d0_value, d1_value;
+String test_value, real_value;
+int test_in, real_in;
 
 void input_setup() {
-    pinMode(a0,INPUT);
-    pinMode(a1,INPUT);
-    pinMode(d0,INPUT);
-    pinMode(d1,INPUT);
+    pinMode(test,INPUT_PULLDOWN);
+    pinMode(real,INPUT_PULLDOWN);
 }
 
 void input_loop() {
-    if(analogRead(a0)>=3072) {
-        a0_value = "true";
-    } else {
-        a0_value = "false";
-    }
+    test_in = digitalRead(test);
+    real_in = digitalRead(real);
 
-    if(analogRead(a1)>=3072) {
-        a1_value = "true";
+    if(test_in==1) {
+        test_value = "true";
+        // Serial.println("TEST");
     } else {
-        a1_value = "false";
+        test_value = "false";
     }
-
-    if(digitalRead(d0)==1) {
-        d0_value = "true";
+   
+    if(real_in==1) {
+        real_value = "true";
+        // Serial.println("REAL");
     } else {
-        d0_value = "false";
-    }
-
-    if(digitalRead(d1)==1) {
-        d1_value = "true";
-    } else {
-        d1_value = "false";
+        real_value = "false";
     }
 }
