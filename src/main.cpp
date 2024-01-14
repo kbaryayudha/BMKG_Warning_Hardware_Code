@@ -57,5 +57,5 @@ void loop() {
   // }
 
   // ethernet_connection_loop();
-  sim7600_loop();
+  //sim7600_loop();
 }
