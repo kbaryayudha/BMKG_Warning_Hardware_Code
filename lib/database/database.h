@@ -33,6 +33,7 @@ void database_setup() {
         DFPlayer.pause();
     } else {
         Serial.println("Not Connected to Server!");
+        ESP.restart();
     }
 
     Serial.println();
@@ -56,11 +57,11 @@ void database_loop() {
 
     currentMillis = millis();
     if(client.connected()) {
-        if(currentMillis - previousMillis >= 1000) {
+        if(currentMillis - previousMillis >= 10000) {
             previousMillis = currentMillis;
             if(i == false) {
                 digitalWrite(inet,HIGH);
-                client.println("GET /api/v1/esp32/siren-activator?province=daerah_istimewa_yogyakarta&site=tower_underpassYIA HTTP/1.0");
+                client.println("GET /api/v1/esp32/siren-activator?province=jawa_tengah&site=tower_tegalkamulyan HTTP/1.0");
                 client.println("Host: semarsiren.id");
                 // client.println("GET /get HTTP/1.1");
                 // client.println("Host: httpbin.org");
@@ -97,39 +98,39 @@ void database_loop() {
                 int status_code = doc["status_code"];
                 const char* message = doc["message"];
 
-                JsonObject data_daerah_istimewa_yogyakarta_tower_underpassYIA = doc["data"]["daerah_istimewa_yogyakarta"]["tower_underpassYIA"];
-                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_real = data_daerah_istimewa_yogyakarta_tower_underpassYIA["real"];
-                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_spare = data_daerah_istimewa_yogyakarta_tower_underpassYIA["spare"];
-                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_test = data_daerah_istimewa_yogyakarta_tower_underpassYIA["test"];
-                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_on = data_daerah_istimewa_yogyakarta_tower_underpassYIA["on"];
+                JsonObject data_jawa_tengah_tower_tegalkamulyan = doc["data"]["jawa_tengah"]["tower_tegalkamulyan"];
+                bool data_jawa_tengah_tower_tegalkamulyan_real = data_jawa_tengah_tower_tegalkamulyan["real"];
+                bool data_jawa_tengah_tower_tegalkamulyan_spare = data_jawa_tengah_tower_tegalkamulyan["spare"];
+                bool data_jawa_tengah_tower_tegalkamulyan_test = data_jawa_tengah_tower_tegalkamulyan["test"];
+                bool data_jawa_tengah_tower_tegalkamulyan_on = data_jawa_tengah_tower_tegalkamulyan["on"];
                 
                 Serial.println("Siren Activator");
                 Serial.print("real  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_real);
+                Serial.println(data_jawa_tengah_tower_tegalkamulyan_real);
                 Serial.print("test  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test);
+                Serial.println(data_jawa_tengah_tower_tegalkamulyan_test);
                 Serial.print("spare : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_spare);
+                Serial.println(data_jawa_tengah_tower_tegalkamulyan_spare);
                 Serial.print("status : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_on);
+                Serial.println(data_jawa_tengah_tower_tegalkamulyan_on);
                 Serial.println();
 
-                if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_spare==1) {
+                if(data_jawa_tengah_tower_tegalkamulyan_spare==1) {
                     digitalWrite(spare,HIGH);
                 } else {
                     digitalWrite(spare,LOW);
                 }
 
                 if(DFPlayer_status=="LOW") {
-                    if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test==1 && data_daerah_istimewa_yogyakarta_tower_underpassYIA_real==0) {
+                    if(data_jawa_tengah_tower_tegalkamulyan_test==1 && data_jawa_tengah_tower_tegalkamulyan_real==0) {
                         DFPlayer.play(2);
                         DFPlayer_status = "HIGH";
-                    } else if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test==0 && data_daerah_istimewa_yogyakarta_tower_underpassYIA_real==1)  {
+                    } else if(data_jawa_tengah_tower_tegalkamulyan_test==0 && data_jawa_tengah_tower_tegalkamulyan_real==1)  {
                         DFPlayer.play(3);
                         DFPlayer_status = "HIGH";
                     } 
                 }
-                if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test==0 && data_daerah_istimewa_yogyakarta_tower_underpassYIA_real==0) {
+                if(data_jawa_tengah_tower_tegalkamulyan_test==0 && data_jawa_tengah_tower_tegalkamulyan_real==0) {
                     DFPlayer.pause();
                     DFPlayer_status = "LOW";
                 }
@@ -140,7 +141,7 @@ void database_loop() {
                 i = true;
             } else {
                 digitalWrite(inet,HIGH);
-                client.println("POST /api/v1/esp32/send-data?province=daerah_istimewa_yogyakarta&site=tower_underpassYIA&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.0");
+                client.println("POST /api/v1/esp32/send-data?province=jawa_tengah&site=tower_tegalkamulyan&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.0");
                 client.println("Host: semarsiren.id");
                 client.println("Connection: close");
                 client.println();

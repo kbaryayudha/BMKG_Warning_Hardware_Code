@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <esp_task_wdt.h>
 #include <SPI.h>
 #include <Ethernet.h>
 #include <SSLClient.h>
@@ -14,6 +15,8 @@ void setup() {
     delay(3000);
     
     Serial.begin(115200);
+    esp_task_wdt_init(3600, true);
+    esp_task_wdt_add(NULL);
     bmkg_time_setup();
     rtc_setup();
     temp_setup();

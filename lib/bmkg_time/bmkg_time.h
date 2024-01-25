@@ -70,12 +70,14 @@ void bmkg_time_setup() {
         Serial.println("Failed to configure Ethernet using DHCP");
         if(Ethernet.hardwareStatus() == EthernetNoHardware) {
             Serial.println("Ethernet shield was not found");
+            ESP.restart();
             while(true) {
                 delay(1);
             }
         }
         if(Ethernet.linkStatus() == LinkOFF) {
             Serial.println("Ethernet cable is not connected");
+            ESP.restart();
         }
         
         IPAddress ip(MYIPADDR);
