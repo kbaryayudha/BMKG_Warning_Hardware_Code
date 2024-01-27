@@ -1,17 +1,10 @@
 #include <ArduinoJson.h>
 #include <StreamUtils.h>
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0x7D, 0xAB, 0xFB };
-
 char server[] = "semarsiren.id";
 // char server[] = "httpbin.org"; 
 
 #define inet 2
- 
-#define MYIPADDR 192,168,1,28
-#define MYIPMASK 255,255,255,0
-#define MYDNS 192,168,1,1
-#define MYGW 192,168,1,1
 
 const int rand_pin = 36;
 
@@ -26,50 +19,14 @@ bool reset = false;
 
 void database_setup() {
     pinMode(inet,OUTPUT);
-    Serial.println("Begin Ethernet");
- 
-    Ethernet.init(5);
- 
-    if(Ethernet.begin(mac)) {
-        Serial.println("DHCP OK!");
-    } else {
-        Serial.println("Failed to configure Ethernet using DHCP");
-        if(Ethernet.hardwareStatus() == EthernetNoHardware) {
-            Serial.println("Ethernet shield was not found");
-            while(true) {
-                delay(1);
-            }
-        }
-        if(Ethernet.linkStatus() == LinkOFF) {
-            Serial.println("Ethernet cable is not connected");
-        }
-        
-        IPAddress ip(MYIPADDR);
-        IPAddress dns(MYDNS);
-        IPAddress gw(MYGW);
-        IPAddress sn(MYIPMASK);
-        Ethernet.begin(mac, ip, dns, gw, sn);
-        Serial.println("STATIC OK!");
-    }
-    delay(5000);
- 
-    Serial.print("Local IP: ");
-    Serial.println(Ethernet.localIP());
-    Serial.print("Subnet Mask : ");
-    Serial.println(Ethernet.subnetMask());
-    Serial.print("Gateway IP : ");
-    Serial.println(Ethernet.gatewayIP());
-    Serial.print("DNS Server : ");
-    Serial.println(Ethernet.dnsServerIP());
- 
-    Serial.println("Ethernet Successfully Initialized");
-
+    
     client.connect(server,443);
 
     if(client.connected()) {
         Serial.println("Connected to Server");
     } else {
         Serial.println("Not Connected to Server!");
+        ESP.restart();
     }
 
     Serial.println();
@@ -93,11 +50,11 @@ void database_loop() {
 
     currentMillis = millis();
     if(client.connected()) {
-        if(currentMillis - previousMillis >= 1000) {
+        if(currentMillis - previousMillis >= 10000) {
             previousMillis = currentMillis;
             if(i==false) {
                 digitalWrite(inet,HIGH);
-                client.println("GET /api/v1/esp32/siren-activator?province=jawa_tengah&site=mobile_cilacap HTTP/1.0");
+                client.println("GET /api/v1/esp32/siren-activator?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo HTTP/1.0");
                 client.println("Host: semarsiren.id");
                 // client.println("GET /get HTTP/1.1");
                 // client.println("Host: httpbin.org");
@@ -134,21 +91,21 @@ void database_loop() {
                 int status_code = doc["status_code"];
                 const char* message = doc["message"];
 
-                JsonObject data_jawa_tengah_mobile_cilacap = doc["data"]["jawa_tengah"]["mobile_cilacap"];
-                bool data_jawa_tengah_mobile_cilacap_real = data_jawa_tengah_mobile_cilacap["real"];
-                bool data_jawa_tengah_mobile_cilacap_voice = data_jawa_tengah_mobile_cilacap["voice"];
-                bool data_jawa_tengah_mobile_cilacap_test = data_jawa_tengah_mobile_cilacap["test"];
-                bool data_jawa_tengah_mobile_cilacap_on = data_jawa_tengah_mobile_cilacap["on"];
+                JsonObject data_daerah_istimewa_yogyakarta_mobile_kulonProgo = doc["data"]["daerah_istimewa_yogyakarta"]["mobile_kulonProgo"];
+                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_real = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["real"];
+                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_voice = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["voice"];
+                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_test = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["test"];
+                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_on = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["on"];
                 
                 Serial.println("Siren Activator");
                 Serial.print("real  : ");
-                Serial.println(data_jawa_tengah_mobile_cilacap_real);
+                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_real);
                 Serial.print("test  : ");
-                Serial.println(data_jawa_tengah_mobile_cilacap_test);
+                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_test);
                 Serial.print("voice : ");
-                Serial.println(data_jawa_tengah_mobile_cilacap_voice);
+                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_voice);
                 Serial.print("status : ");
-                Serial.println(data_jawa_tengah_mobile_cilacap_on);
+                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_on);
                 Serial.println();
 
                 client.stop();
@@ -160,19 +117,19 @@ void database_loop() {
                 digitalWrite(inet,HIGH);
 
                 if(reset==true && test_value=="true" && real_value=="false") {
-                    client.println("POST /api/v1/esp32/change-state?province=jawa_tengah&site=mobile_cilacap&real=false&test="+test_value+" HTTP/1.1");
+                    client.println("POST /api/v1/esp32/change-state?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo&real=false&test="+test_value+" HTTP/1.1");
                     client.println("Host: semarsiren.id");
                     client.println("Connection: close");
                     client.println();
                     reset = false;
                 } else if(reset==true && test_value=="false" && real_value=="true") {
-                    client.println("POST /api/v1/esp32/change-state?province=jawa_tengah&site=mobile_cilacap&real="+real_value+"&test=false HTTP/1.1");
+                    client.println("POST /api/v1/esp32/change-state?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo&real="+real_value+"&test=false HTTP/1.1");
                     client.println("Host: semarsiren.id");
                     client.println("Connection: close");
                     client.println();
                     reset = false;
                 } else if(reset==false && test_value=="false" && real_value=="false") {
-                    client.println("POST /api/v1/esp32/change-state?province=jawa_tengah&site=mobile_cilacap&real="+real_value+"&test="+test_value+" HTTP/1.1");
+                    client.println("POST /api/v1/esp32/change-state?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo&real="+real_value+"&test="+test_value+" HTTP/1.1");
                     client.println("Host: semarsiren.id");
                     client.println("Connection: close");
                     client.println();
