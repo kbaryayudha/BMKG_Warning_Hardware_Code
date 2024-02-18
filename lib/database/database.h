@@ -1,8 +1,7 @@
 #include <ArduinoJson.h>
 #include <StreamUtils.h>
 
-char server[] = "semarsiren.id";
-// char server[] = "httpbin.org";   
+char server[] = "semarsiren.id";  
 
 #define inet 2
 #define spare 17
@@ -59,10 +58,8 @@ void database_loop() {
             previousMillis = currentMillis;
             if(i == false) {
                 digitalWrite(inet,HIGH);
-                client.println("GET /api/v1/esp32/siren-activator?province=daerah_istimewa_yogyakarta&site=tower_glagah HTTP/1.1");
+                client.println("GET /api/v1/esp32/siren-activator?province=daerah_istimewa_yogyakarta&site=tower_underpassYIA HTTP/1.1");
                 client.println("Host: semarsiren.id");
-                // client.println("GET /get HTTP/1.1");
-                // client.println("Host: httpbin.org");
                 client.println("Connection: close");
                 if(client.println() == 0) {
                     Serial.println("Failed to send request");
@@ -101,42 +98,42 @@ void database_loop() {
                 int status_code = doc["status_code"];
                 const char* message = doc["message"];
 
-                JsonObject data_daerah_istimewa_yogyakarta_tower_glagah = doc["data"]["daerah_istimewa_yogyakarta"]["tower_glagah"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_test = data_daerah_istimewa_yogyakarta_tower_glagah["test"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_real = data_daerah_istimewa_yogyakarta_tower_glagah["real"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_spare = data_daerah_istimewa_yogyakarta_tower_glagah["spare"];
-                const char* data_daerah_istimewa_yogyakarta_tower_glagah_date_time = data_daerah_istimewa_yogyakarta_tower_glagah["date_time"];
-                bool data_daerah_istimewa_yogyakarta_tower_glagah_on = data_daerah_istimewa_yogyakarta_tower_glagah["on"];
+                JsonObject data_daerah_istimewa_yogyakarta_tower_underpassYIA = doc["data"]["daerah_istimewa_yogyakarta"]["tower_underpassYIA"];
+                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_test = data_daerah_istimewa_yogyakarta_tower_underpassYIA["test"];
+                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_real = data_daerah_istimewa_yogyakarta_tower_underpassYIA["real"];
+                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_spare = data_daerah_istimewa_yogyakarta_tower_underpassYIA["spare"];
+                const char* data_daerah_istimewa_yogyakarta_tower_underpassYIA_date_time = data_daerah_istimewa_yogyakarta_tower_underpassYIA["date_time"];
+                bool data_daerah_istimewa_yogyakarta_tower_underpassYIA_on = data_daerah_istimewa_yogyakarta_tower_underpassYIA["on"];
                 
                 Serial.println("Siren Activator");
                 Serial.print("test  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_test);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test);
                 Serial.print("real  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_real);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_real);
                 Serial.print("spare : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_spare);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_spare);
                 Serial.print("date_time : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_date_time);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_date_time);
                 Serial.print("status : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_on);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_underpassYIA_on);
                 Serial.println();
 
-                if(data_daerah_istimewa_yogyakarta_tower_glagah_spare==1) {
+                if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_spare==1) {
                     digitalWrite(spare,HIGH);
                 } else {
                     digitalWrite(spare,LOW);
                 }
 
                 if(DFPlayer_status=="LOW") {
-                    if(data_daerah_istimewa_yogyakarta_tower_glagah_test==1 && data_daerah_istimewa_yogyakarta_tower_glagah_real==0) {
+                    if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test==1 && data_daerah_istimewa_yogyakarta_tower_underpassYIA_real==0) {
                         DFPlayer.play(2);
                         DFPlayer_status = "HIGH";
-                    } else if(data_daerah_istimewa_yogyakarta_tower_glagah_test==0 && data_daerah_istimewa_yogyakarta_tower_glagah_real==1)  {
+                    } else if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test==0 && data_daerah_istimewa_yogyakarta_tower_underpassYIA_real==1)  {
                         DFPlayer.play(3);
                         DFPlayer_status = "HIGH";
                     } 
                 }
-                if(data_daerah_istimewa_yogyakarta_tower_glagah_test==0 && data_daerah_istimewa_yogyakarta_tower_glagah_real==0) {
+                if(data_daerah_istimewa_yogyakarta_tower_underpassYIA_test==0 && data_daerah_istimewa_yogyakarta_tower_underpassYIA_real==0) {
                     DFPlayer.pause();
                     DFPlayer_status = "LOW";
                 }
@@ -146,7 +143,7 @@ void database_loop() {
                 i = true;
             } else {
                 digitalWrite(inet,HIGH);
-                client.println("POST /api/v1/esp32/send-data?province=daerah_istimewa_yogyakarta&site=tower_glagah&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.1");
+                client.println("POST /api/v1/esp32/send-data?province=daerah_istimewa_yogyakarta&site=tower_underpassYIA&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.1");
                 client.println("Host: semarsiren.id");
                 client.println("Connection: close");
                 client.println();
