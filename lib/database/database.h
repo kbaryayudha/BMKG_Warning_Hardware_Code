@@ -2,7 +2,7 @@
 #include <StreamUtils.h>
 
 char server[] = "semarsiren.id";
-// char server[] = "httpbin.org";  
+// char server[] = "httpbin.org";   
 
 #define inet 2
 #define spare 17
@@ -10,7 +10,6 @@ char server[] = "semarsiren.id";
 const int rand_pin = 36;
 
 EthernetClient base_client;
-// EthernetClient client;
 SSLClient client(base_client, TAs, (size_t)TAs_NUM, rand_pin);
  
 unsigned long beginMicros, endMicros, byteCount = 0, currentMillis, previousMillis = 0;
@@ -24,7 +23,6 @@ void database_setup() {
     pinMode(spare,OUTPUT);
 
     client.connect(server, 443);
-    // client.connect(server, 80);
 
     if(client.connected()) {
         Serial.println("Connected to Server");
@@ -61,16 +59,21 @@ void database_loop() {
             previousMillis = currentMillis;
             if(i == false) {
                 digitalWrite(inet,HIGH);
-                client.println("GET /api/v1/esp32/siren-activator?province=jawa_tengah&site=tower_tegalkamulyan HTTP/1.0");
+                client.println("GET /api/v1/esp32/siren-activator?province=daerah_istimewa_yogyakarta&site=tower_glagah HTTP/1.1");
                 client.println("Host: semarsiren.id");
                 // client.println("GET /get HTTP/1.1");
                 // client.println("Host: httpbin.org");
                 client.println("Connection: close");
+                if(client.println() == 0) {
+                    Serial.println("Failed to send request");
+                    client.stop();
+                    return;
+                }
                 client.println();
                 
                 char status[32] = {0};
                 client.readBytesUntil('\r', status, sizeof(status));
-                if(strcmp(status, "HTTP/1.1 200 OK") != 0) {
+                if(strcmp(status + 9, "200 OK") != 0) {
                     Serial.print("Unexpected response: ");
                     Serial.println(status);
                     client.stop();
@@ -84,64 +87,66 @@ void database_loop() {
                     return;
                 }
 
-                StaticJsonDocument<384> doc;
-
+                JsonDocument doc;
                 ReadBufferingStream bufferedFile(client, 64);
                 DeserializationError error = deserializeJson(doc, bufferedFile);
 
                 if(error) {
                     Serial.print("deserializeJson() failed: ");
                     Serial.println(error.c_str());
+                    client.stop();
                     return;
                 }
 
                 int status_code = doc["status_code"];
                 const char* message = doc["message"];
 
-                JsonObject data_jawa_tengah_tower_tegalkamulyan = doc["data"]["jawa_tengah"]["tower_tegalkamulyan"];
-                bool data_jawa_tengah_tower_tegalkamulyan_real = data_jawa_tengah_tower_tegalkamulyan["real"];
-                bool data_jawa_tengah_tower_tegalkamulyan_spare = data_jawa_tengah_tower_tegalkamulyan["spare"];
-                bool data_jawa_tengah_tower_tegalkamulyan_test = data_jawa_tengah_tower_tegalkamulyan["test"];
-                bool data_jawa_tengah_tower_tegalkamulyan_on = data_jawa_tengah_tower_tegalkamulyan["on"];
+                JsonObject data_daerah_istimewa_yogyakarta_tower_glagah = doc["data"]["daerah_istimewa_yogyakarta"]["tower_glagah"];
+                bool data_daerah_istimewa_yogyakarta_tower_glagah_test = data_daerah_istimewa_yogyakarta_tower_glagah["test"];
+                bool data_daerah_istimewa_yogyakarta_tower_glagah_real = data_daerah_istimewa_yogyakarta_tower_glagah["real"];
+                bool data_daerah_istimewa_yogyakarta_tower_glagah_spare = data_daerah_istimewa_yogyakarta_tower_glagah["spare"];
+                const char* data_daerah_istimewa_yogyakarta_tower_glagah_date_time = data_daerah_istimewa_yogyakarta_tower_glagah["date_time"];
+                bool data_daerah_istimewa_yogyakarta_tower_glagah_on = data_daerah_istimewa_yogyakarta_tower_glagah["on"];
                 
                 Serial.println("Siren Activator");
-                Serial.print("real  : ");
-                Serial.println(data_jawa_tengah_tower_tegalkamulyan_real);
                 Serial.print("test  : ");
-                Serial.println(data_jawa_tengah_tower_tegalkamulyan_test);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_test);
+                Serial.print("real  : ");
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_real);
                 Serial.print("spare : ");
-                Serial.println(data_jawa_tengah_tower_tegalkamulyan_spare);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_spare);
+                Serial.print("date_time : ");
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_date_time);
                 Serial.print("status : ");
-                Serial.println(data_jawa_tengah_tower_tegalkamulyan_on);
+                Serial.println(data_daerah_istimewa_yogyakarta_tower_glagah_on);
                 Serial.println();
 
-                if(data_jawa_tengah_tower_tegalkamulyan_spare==1) {
+                if(data_daerah_istimewa_yogyakarta_tower_glagah_spare==1) {
                     digitalWrite(spare,HIGH);
                 } else {
                     digitalWrite(spare,LOW);
                 }
 
                 if(DFPlayer_status=="LOW") {
-                    if(data_jawa_tengah_tower_tegalkamulyan_test==1 && data_jawa_tengah_tower_tegalkamulyan_real==0) {
+                    if(data_daerah_istimewa_yogyakarta_tower_glagah_test==1 && data_daerah_istimewa_yogyakarta_tower_glagah_real==0) {
                         DFPlayer.play(2);
                         DFPlayer_status = "HIGH";
-                    } else if(data_jawa_tengah_tower_tegalkamulyan_test==0 && data_jawa_tengah_tower_tegalkamulyan_real==1)  {
+                    } else if(data_daerah_istimewa_yogyakarta_tower_glagah_test==0 && data_daerah_istimewa_yogyakarta_tower_glagah_real==1)  {
                         DFPlayer.play(3);
                         DFPlayer_status = "HIGH";
                     } 
                 }
-                if(data_jawa_tengah_tower_tegalkamulyan_test==0 && data_jawa_tengah_tower_tegalkamulyan_real==0) {
+                if(data_daerah_istimewa_yogyakarta_tower_glagah_test==0 && data_daerah_istimewa_yogyakarta_tower_glagah_real==0) {
                     DFPlayer.pause();
                     DFPlayer_status = "LOW";
                 }
                 client.stop();
                 delay(1);
                 client.connect(server, 443);
-                bufferedFile.flush();
                 i = true;
             } else {
                 digitalWrite(inet,HIGH);
-                client.println("POST /api/v1/esp32/send-data?province=jawa_tengah&site=tower_tegalkamulyan&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.0");
+                client.println("POST /api/v1/esp32/send-data?province=daerah_istimewa_yogyakarta&site=tower_glagah&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.1");
                 client.println("Host: semarsiren.id");
                 client.println("Connection: close");
                 client.println();
@@ -166,6 +171,5 @@ void database_loop() {
         Serial.println();
         delay(1);
         client.connect(server, 443);
-        // client.connect(server, 80);
     }
 }
