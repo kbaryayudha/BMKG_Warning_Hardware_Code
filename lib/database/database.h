@@ -50,20 +50,25 @@ void database_loop() {
 
     currentMillis = millis();
     if(client.connected()) {
-        if(currentMillis - previousMillis >= 10000) {
+        if(currentMillis - previousMillis >= 1000) {
             previousMillis = currentMillis;
             if(i==false) {
                 digitalWrite(inet,HIGH);
-                client.println("GET /api/v1/esp32/siren-activator?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo HTTP/1.0");
+                client.println("GET /api/v1/esp32/siren-activator?province=sumatra_utara&site=mobile_tapanuliTengah HTTP/1.1");
                 client.println("Host: semarsiren.id");
                 // client.println("GET /get HTTP/1.1");
                 // client.println("Host: httpbin.org");
                 client.println("Connection: close");
+                if(client.println() == 0) {
+                    Serial.println("Failed to send request");
+                    client.stop();
+                    return;
+                }
                 client.println();
                 
                 char status[32] = {0};
                 client.readBytesUntil('\r', status, sizeof(status));
-                if(strcmp(status, "HTTP/1.1 200 OK") != 0) {
+                if(strcmp(status + 9, "200 OK") != 0) {
                     Serial.print("Unexpected response: ");
                     Serial.println(status);
                     client.stop();
@@ -77,63 +82,68 @@ void database_loop() {
                     return;
                 }
 
-                StaticJsonDocument<384> doc;
-
+                JsonDocument doc;
                 ReadBufferingStream bufferedFile(client, 64);
                 DeserializationError error = deserializeJson(doc, bufferedFile);
 
                 if(error) {
                     Serial.print("deserializeJson() failed: ");
                     Serial.println(error.c_str());
+                    client.stop();
                     return;
                 }
 
                 int status_code = doc["status_code"];
                 const char* message = doc["message"];
 
-                JsonObject data_daerah_istimewa_yogyakarta_mobile_kulonProgo = doc["data"]["daerah_istimewa_yogyakarta"]["mobile_kulonProgo"];
-                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_real = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["real"];
-                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_voice = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["voice"];
-                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_test = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["test"];
-                bool data_daerah_istimewa_yogyakarta_mobile_kulonProgo_on = data_daerah_istimewa_yogyakarta_mobile_kulonProgo["on"];
+                JsonObject data_sumatra_utara_mobile_tapanuliTengah = doc["data"]["sumatra_utara"]["mobile_tapanuliTengah"];
+                bool data_sumatra_utara_mobile_tapanuliTengah_test = data_sumatra_utara_mobile_tapanuliTengah["test"];
+                bool data_sumatra_utara_mobile_tapanuliTengah_real = data_sumatra_utara_mobile_tapanuliTengah["real"];
+                bool data_sumatra_utara_mobile_tapanuliTengah_voice = data_sumatra_utara_mobile_tapanuliTengah["voice"];
+                const char* data_sumatra_utara_mobile_tapanuliTengah_date_time = data_sumatra_utara_mobile_tapanuliTengah["date_time"];
+                bool data_sumatra_utara_mobile_tapanuliTengah_on = data_sumatra_utara_mobile_tapanuliTengah["on"];
                 
                 Serial.println("Siren Activator");
-                Serial.print("real  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_real);
                 Serial.print("test  : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_test);
+                Serial.println(data_sumatra_utara_mobile_tapanuliTengah_test);
+                Serial.print("real  : ");
+                Serial.println(data_sumatra_utara_mobile_tapanuliTengah_real);
                 Serial.print("voice : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_voice);
+                Serial.println(data_sumatra_utara_mobile_tapanuliTengah_voice);
+                Serial.print("date and time : ");
+                Serial.println(data_sumatra_utara_mobile_tapanuliTengah_date_time);
                 Serial.print("status : ");
-                Serial.println(data_daerah_istimewa_yogyakarta_mobile_kulonProgo_on);
+                Serial.println(data_sumatra_utara_mobile_tapanuliTengah_on);
                 Serial.println();
 
                 client.stop();
                 delay(1);
                 client.connect(server, 443);
-                bufferedFile.flush();
                 i = true;
             } else {
-                digitalWrite(inet,HIGH);
-
                 if(reset==true && test_value=="true" && real_value=="false") {
-                    client.println("POST /api/v1/esp32/change-state?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo&real=false&test="+test_value+" HTTP/1.1");
+                    digitalWrite(inet,HIGH);
+                    client.println("POST /api/v1/esp32/change-state?province=sumatra_utara&site=mobile_tapanuliTengah&test=true&real=false HTTP/1.1");
                     client.println("Host: semarsiren.id");
                     client.println("Connection: close");
                     client.println();
                     reset = false;
                 } else if(reset==true && test_value=="false" && real_value=="true") {
-                    client.println("POST /api/v1/esp32/change-state?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo&real="+real_value+"&test=false HTTP/1.1");
+                    digitalWrite(inet,HIGH);
+                    client.println("POST /api/v1/esp32/change-state?province=sumatra_utara&site=mobile_tapanuliTengah&test=false&real=true HTTP/1.1");
                     client.println("Host: semarsiren.id");
                     client.println("Connection: close");
                     client.println();
                     reset = false;
                 } else if(reset==false && test_value=="false" && real_value=="false") {
-                    client.println("POST /api/v1/esp32/change-state?province=daerah_istimewa_yogyakarta&site=mobile_kulonProgo&real="+real_value+"&test="+test_value+" HTTP/1.1");
+                    digitalWrite(inet,HIGH);
+                    client.println("POST /api/v1/esp32/change-state?province=sumatra_utara&site=mobile_tapanuliTengah&test=false&real=false HTTP/1.1");
                     client.println("Host: semarsiren.id");
                     client.println("Connection: close");
                     client.println();
                     reset = true;
+                } else {
+                    digitalWrite(inet,LOW);
                 }
                 i = false;
             }
