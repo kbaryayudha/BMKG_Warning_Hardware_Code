@@ -49,7 +49,7 @@ void database_loop() {
 
     currentMillis = millis();
     if(client.connected()) {
-        if(currentMillis - previousMillis >= 10000) {
+        if(currentMillis - previousMillis >= 1000) {
             previousMillis = currentMillis;
             if(i==false) {
                 digitalWrite(inet,HIGH);
