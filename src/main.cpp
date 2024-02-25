@@ -13,7 +13,7 @@ void setup() {
     delay(3000);
     
     Serial.begin(115200);
-    esp_task_wdt_init(3600, true);
+    esp_task_wdt_init(120, true);
     esp_task_wdt_add(NULL);
     bmkg_time_setup();
     input_setup();
@@ -22,6 +22,7 @@ void setup() {
 }
 
 void loop() {
+    esp_task_wdt_reset();
     bmkg_time_loop();
     input_loop();
     output_loop();
