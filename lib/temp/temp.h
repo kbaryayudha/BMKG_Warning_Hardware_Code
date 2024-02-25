@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include <OneWire.h>
 #include <DallasTemperature.h>
 
 #define fan 26
@@ -6,7 +6,7 @@
 OneWire ds18b20(33);
 DallasTemperature temp(&ds18b20);
 
-float temp_value;
+float temp_value, raw_temp_value;
 
 void temp_setup() {
     temp.begin();
@@ -15,11 +15,23 @@ void temp_setup() {
 
 void temp_loop() {
     temp.requestTemperatures();
-    temp_value = temp.getTempCByIndex(0);
+    raw_temp_value = temp.getTempCByIndex(0);
 
-    if(temp_value >= 35.0) {
-        digitalWrite(fan,LOW);
+    if(raw_temp_value != -127 && raw_temp_value != 85) {
+        temp_value = raw_temp_value;
     } else {
-        digitalWrite(fan,HIGH);
+        temp_value = temp_value;
     }
+
+    if(temp_value >= 25.0) {
+        digitalWrite(fan,HIGH);
+    } else {
+        digitalWrite(fan,LOW);
+    }
+
+    // Serial.print("Temp : ");
+    // Serial.print(raw_temp_value);
+    // Serial.println("°C");
+
+    // delay(2000);
 }

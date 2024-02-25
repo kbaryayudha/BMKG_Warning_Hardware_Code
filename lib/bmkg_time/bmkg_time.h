@@ -1,34 +1,136 @@
-#include <Arduino.h>
+#include <EthernetUdp.h>
+#include <TimeLib.h>
 
-const char* bmkg_server = "ntp.bmkg.go.id";
-const long gmtOffset_sec = 25200;
-const int daylightOffset_sec = 0;
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xBB, 0x2D, 0x92 };
+// byte mac[] = { 0xDE, 0xAD, 0xBE, 0x2F, 0xBA, 0xAC };
+ 
+#define MYIPADDR 192,168,1,28
+#define MYIPMASK 255,255,255,0
+#define MYDNS 192,168,1,1
+#define MYGW 192,168,1,1
+
+unsigned int localPort = 8888;
+const char timeServer[] = "ntp.bmkg.go.id";
+const int NTP_PACKET_SIZE = 48;
+byte packetBuffer[NTP_PACKET_SIZE];
+int size;
+
+const int timeZone = 7;
+
+EthernetUDP Udp;
+
+time_t prevDisplay = 0;
+uint32_t beginWait;
+unsigned long secsSince1900;
+
+void sendNTPpacket(const char * address) {
+    memset(packetBuffer, 0, NTP_PACKET_SIZE);
+    packetBuffer[0] = 0b11100011;
+    packetBuffer[1] = 0;
+    packetBuffer[2] = 6;
+    packetBuffer[3] = 0xEC;
+
+    packetBuffer[12]  = 49;
+    packetBuffer[13]  = 0x4E;
+    packetBuffer[14]  = 49;
+    packetBuffer[15]  = 52;                
+    Udp.beginPacket(address, 123);
+    Udp.write(packetBuffer, NTP_PACKET_SIZE);
+    Udp.endPacket();
+}
+
+time_t getNtpTime() {
+    while(Udp.parsePacket()>0);
+    Serial.println("Transmit NTP Request");
+    sendNTPpacket(timeServer);
+    beginWait = millis();
+    while(millis()-beginWait<1000) {
+        size = Udp.parsePacket();
+        if(size>=NTP_PACKET_SIZE) {
+            Serial.println("Receive NTP Response");
+            Udp.read(packetBuffer, NTP_PACKET_SIZE);
+            secsSince1900 =  word(packetBuffer[40]) << 24;
+            secsSince1900 |= word(packetBuffer[41]) << 16;
+            secsSince1900 |= word(packetBuffer[42]) << 8;
+            secsSince1900 |= word(packetBuffer[43]);
+            return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
+        }
+    }
+    Serial.println("No NTP Response");
+    return 0; 
+}
 
 void bmkg_time_setup() {
-  configTime(gmtOffset_sec, daylightOffset_sec, bmkg_server);
+    Serial.println("Begin Ethernet");
+ 
+    Ethernet.init(5);
+ 
+    if(Ethernet.begin(mac)) {
+        Serial.println("DHCP OK!");
+    } else {
+        Serial.println("Failed to configure Ethernet using DHCP");
+        if(Ethernet.hardwareStatus() == EthernetNoHardware) {
+            Serial.println("Ethernet shield was not found");
+            ESP.restart();
+            while(true) {
+                delay(1);
+            }
+        }
+        if(Ethernet.linkStatus() == LinkOFF) {
+            Serial.println("Ethernet cable is not connected");
+            ESP.restart();
+        }
+        
+        IPAddress ip(MYIPADDR);
+        IPAddress dns(MYDNS);
+        IPAddress gw(MYGW);
+        IPAddress sn(MYIPMASK);
+        Ethernet.begin(mac, ip, dns, gw, sn);
+        Serial.println("STATIC OK!");
+    }
+    delay(5000);
+ 
+    Serial.print("Local IP : ");
+    Serial.println(Ethernet.localIP());
+    Serial.print("Subnet Mask : ");
+    Serial.println(Ethernet.subnetMask());
+    Serial.print("Gateway IP : ");
+    Serial.println(Ethernet.gatewayIP());
+    Serial.print("DNS Server : ");
+    Serial.println(Ethernet.dnsServerIP());
+ 
+    Serial.println("Ethernet Successfully Initialized");
+
+    Udp.begin(localPort);
+    Serial.println("waiting for sync");
+    setSyncProvider(getNtpTime);
+}
+
+void printDigits(int digits) {
+    if(digits < 10) Serial.print('0');
+    Serial.print(digits);
+}
+
+void digitalClockDisplay() {
+    printDigits(day());
+    Serial.print("/");
+    printDigits(month());
+    Serial.print("/");
+    Serial.print(year()); 
+    Serial.print(" ");
+    printDigits(hour());
+    Serial.print(":");
+    printDigits(minute());
+    Serial.print(":");
+    printDigits(second());
+    Serial.println(); 
 }
 
 void bmkg_time_loop() {
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)) {
-    // lcd.setCursor(0,0);
-    // lcd.print("Not Connected To");
-    // lcd.setCursor(0,1);
-    // lcd.print("BMKG Time Server");
-    delay(1000);
-    // lcd.clear();
-    return;
-  }
-  // lcd.setCursor(0,0);
-  // switch(timeinfo.tm_wday) {
-  //   case 0: lcd.print(&timeinfo, "Minggu, %d/%m/%y"); break;
-  //   case 1: lcd.print(&timeinfo, "Senin, %d/%m/%y"); break;
-  //   case 2: lcd.print(&timeinfo, "Selasa, %d/%m/%y"); break;
-  //   case 3: lcd.print(&timeinfo, "Rabu, %d/%m/%y"); break;
-  //   case 4: lcd.print(&timeinfo, "Kamis, %d/%m/%y"); break;
-  //   case 5: lcd.print(&timeinfo, "Jumat, %d/%m/%y"); break;
-  //   case 6: lcd.print(&timeinfo, "Sabtu, %d/%m/%y"); break;
-  // }
-  // lcd.setCursor(0,1);
-  // lcd.print(&timeinfo, "%H:%M:%S WIB");
+    if(timeStatus()!=timeNotSet) {
+        if(now()!=prevDisplay) {
+            prevDisplay = now();
+            // digitalClockDisplay();  
+        }
+    }
 }

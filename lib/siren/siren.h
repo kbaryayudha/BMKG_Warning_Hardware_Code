@@ -1,30 +1,24 @@
-#include <Arduino.h>
 #include <DFRobotDFPlayerMini.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySoftwareSerial(25, 26);
-DFRobotDFPlayerMini myDFPlayer;
+SoftwareSerial software_serial(25, 26);
+DFRobotDFPlayerMini DFPlayer;
 
 void siren_setup() {
-  mySoftwareSerial.begin(9600);
+    software_serial.begin(9600);
+    
+    if(DFPlayer.begin(software_serial)) {
+        Serial.println("DFPLayer is connected");
+    }
 
-  if(!myDFPlayer.begin(mySoftwareSerial)) {
-    // lcd.setCursor(0,0);
-    // lcd.print("Not Connected To");
-    // lcd.setCursor(0,1);
-    // lcd.print("MP3 Player");
-    Serial.println("DFPLayer is not connected");
-    delay(3000);
-    // lcd.clear();    
-  } else {
-    // lcd.setCursor(0,0);
-    // lcd.print("Connected To");
-    // lcd.setCursor(0,1);
-    // lcd.print("MP3 Player");
-    Serial.println("DFPLayer is connected");
-    delay(3000);
-    // lcd.clear();    
-  }
+    while(!DFPlayer.begin(software_serial)) {
+        Serial.println("DFPLayer is not connected");
+        delay(0);
+        if(DFPlayer.begin(software_serial)) {
+            Serial.println("DFPLayer is connected");
+            break;
+        }
+    }
 
-  myDFPlayer.volume(25);
+    DFPlayer.volume(30);
 }
