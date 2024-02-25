@@ -24,6 +24,7 @@ void setup() {
     // voltage_setup();
     siren_setup();
     database_setup();
+
   // wifi_connection_setup();
   // server_connection_setup();
   // voltmeter_setup();

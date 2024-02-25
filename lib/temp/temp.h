@@ -24,9 +24,9 @@ void temp_loop() {
     }
 
     if(temp_value >= 25.0) {
-        digitalWrite(fan,HIGH);
-    } else {
         digitalWrite(fan,LOW);
+    } else {
+        digitalWrite(fan,HIGH);
     }
 
     // Serial.print("Temp : ");

@@ -1,12 +1,12 @@
-#define test 34
-#define real 35
+#define test 21
+#define real 22
 
 String test_value, real_value;
 int test_in, real_in;
 
 void input_setup() {
-    pinMode(test,INPUT_PULLDOWN);
-    pinMode(real,INPUT_PULLDOWN);
+    pinMode(test,INPUT);
+    pinMode(real,INPUT);
 }
 
 void input_loop() {

@@ -211,7 +211,7 @@ void database_loop() {
 //             previousMillis = currentMillis;
 //             if(i==false) {
 //                 digitalWrite(inet,HIGH);
-//                 client.println("GET /api/v1/esp32/siren-activator?province=demonstration&site=tower_demo HTTP/1.1");
+//                 client.println("GET /api/v1/esp32/siren-activator?province=demonstration&site=mobile_demo HTTP/1.1");
 //                 client.println("Host: semarsiren.id");
 //                 client.println("Connection: close");
 //                 if(client.println() == 0) {
@@ -251,24 +251,24 @@ void database_loop() {
 //                 int status_code = doc["status_code"];
 //                 const char* message = doc["message"];
 
-//                 JsonObject data_demonstration_tower_demo = doc["data"]["demonstration"]["tower_demo"];
-//                 bool data_demonstration_tower_demo_test = data_demonstration_tower_demo["test"];
-//                 bool data_demonstration_tower_demo_real = data_demonstration_tower_demo["real"];
-//                 bool data_demonstration_tower_demo_voice = data_demonstration_tower_demo["voice"];
-//                 const char* data_demonstration_tower_demo_date_time = data_demonstration_tower_demo["date_time"];
-//                 bool data_demonstration_tower_demo_on = data_demonstration_tower_demo["on"];
+//                 JsonObject data_demonstration_mobile_demo = doc["data"]["demonstration"]["mobile_demo"];
+//                 bool data_demonstration_mobile_demo_test = data_demonstration_mobile_demo["test"];
+//                 bool data_demonstration_mobile_demo_real = data_demonstration_mobile_demo["real"];
+//                 bool data_demonstration_mobile_demo_voice = data_demonstration_mobile_demo["voice"];
+//                 const char* data_demonstration_mobile_demo_date_time = data_demonstration_mobile_demo["date_time"];
+//                 bool data_demonstration_mobile_demo_on = data_demonstration_mobile_demo["on"];
                 
 //                 Serial.println("Siren Activator");
 //                 Serial.print("test  : ");
-//                 Serial.println(data_demonstration_tower_demo_test);
+//                 Serial.println(data_demonstration_mobile_demo_test);
 //                 Serial.print("real  : ");
-//                 Serial.println(data_demonstration_tower_demo_real);
+//                 Serial.println(data_demonstration_mobile_demo_real);
 //                 Serial.print("voice : ");
-//                 Serial.println(data_demonstration_tower_demo_voice);
+//                 Serial.println(data_demonstration_mobile_demo_voice);
 //                 Serial.print("date and time : ");
-//                 Serial.println(data_demonstration_tower_demo_date_time);
+//                 Serial.println(data_demonstration_mobile_demo_date_time);
 //                 Serial.print("status : ");
-//                 Serial.println(data_demonstration_tower_demo_on);
+//                 Serial.println(data_demonstration_mobile_demo_on);
 //                 Serial.println();
 
 //                 client.stop();
