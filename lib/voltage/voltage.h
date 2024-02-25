@@ -16,20 +16,20 @@ void voltage_setup() {
 
 void voltage_loop() {
     if(analogRead(primary_voltage)>512) {
-        primary_voltage_value = mapfloat(analogRead(primary_voltage),0,4095,0,13.8);
+        primary_voltage_value = mapfloat(analogRead(primary_voltage),0,3152,0,28);
     } else {
         primary_voltage_value = 0;
     }
 
-    if(analogRead(secondary_voltage)>512) {
-        secondary_voltage_value = mapfloat(analogRead(secondary_voltage),0,4095,0,13.8);
-    } else {
+    // if(analogRead(secondary_voltage)>512) {
+        // secondary_voltage_value = mapfloat(analogRead(secondary_voltage),0,4095,0,13.8);
+    // } else {
         secondary_voltage_value = 0;
-    }
+    // }
     
-    if(analogRead(accu_voltage)>512) {
-        accu_voltage_value = mapfloat(analogRead(accu_voltage),0,4095,0,28);
-    } else {
+    // if(analogRead(accu_voltage)>512) {
+        // accu_voltage_value = mapfloat(analogRead(accu_voltage),0,4095,0,28);
+    // } else {
         accu_voltage_value = 0;
-    }
+    // }
 }

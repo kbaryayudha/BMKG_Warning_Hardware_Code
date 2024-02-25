@@ -22,6 +22,7 @@ EthernetUDP Udp;
 time_t prevDisplay = 0;
 uint32_t beginWait;
 unsigned long secsSince1900;
+int rtcday, rtcmonth, rtcyear, rtchour, rtcminute, rtcsecond;
 
 void sendNTPpacket(const char * address) {
     memset(packetBuffer, 0, NTP_PACKET_SIZE);
@@ -112,17 +113,17 @@ void printDigits(int digits) {
 }
 
 void digitalClockDisplay() {
-    printDigits(day());
+    printDigits(rtcday);
     Serial.print("/");
-    printDigits(month());
+    printDigits(rtcmonth);
     Serial.print("/");
-    Serial.print(year()); 
+    Serial.print(rtcyear); 
     Serial.print(" ");
-    printDigits(hour());
+    printDigits(rtchour);
     Serial.print(":");
-    printDigits(minute());
+    printDigits(rtcminute);
     Serial.print(":");
-    printDigits(second());
+    printDigits(rtcsecond);
     Serial.println(); 
 }
 
@@ -130,6 +131,14 @@ void bmkg_time_loop() {
     if(timeStatus()!=timeNotSet) {
         if(now()!=prevDisplay) {
             prevDisplay = now();
+
+            rtcday = day();
+            rtcmonth = month();
+            rtcyear = year();
+            rtchour = hour();
+            rtcminute = minute();
+            rtcsecond = second();
+
             // digitalClockDisplay();  
         }
     }
