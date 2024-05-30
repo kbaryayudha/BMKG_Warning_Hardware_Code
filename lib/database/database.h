@@ -11,7 +11,7 @@ const int rand_pin = 36;
 EthernetClient base_client;
 SSLClient client(base_client, TAs, (size_t)TAs_NUM, rand_pin);
  
-unsigned long beginMicros, endMicros, byteCount = 0, currentMillis, previousMillis = 0;
+unsigned long beginMicros, endMicros, byteCount = 0, previousMillis = 0;
 bool printWebData = true, i = false;
 float seconds, rate;
 int len;
@@ -41,9 +41,9 @@ void database_setup() {
 void database_loop() {
     len = client.available();
     if(len > 0) {
-        byte buffer[3000];
-        if(len > 3000) {
-            len = 3000;
+        byte buffer[80];
+        if(len > 80) {
+            len = 80;
         }
         client.read(buffer, len);
         if(printWebData) {
@@ -52,21 +52,21 @@ void database_loop() {
         byteCount = byteCount + len;
     }
 
-    currentMillis = millis();
     if(client.connected()) {
-        if(currentMillis - previousMillis >= 10000) {
-            previousMillis = currentMillis;
+        if(millis() - previousMillis >= 10000) {
+            previousMillis = millis();
             if(i == false) {
                 digitalWrite(inet,HIGH);
-                client.println("GET /api/v1/esp32/siren-activator?province=sumatra_utara&site=tower_pandan HTTP/1.1");
+                client.println("GET /api/v1/esp32/siren-activator?province=demonstration&site=tower_demo HTTP/1.0");
                 client.println("Host: semarsiren.id");
                 client.println("Connection: close");
+                client.println();
+
                 if(client.println() == 0) {
                     Serial.println("Failed to send request");
                     client.stop();
                     return;
                 }
-                client.println();
                 
                 char status[32] = {0};
                 client.readBytesUntil('\r', status, sizeof(status));
@@ -98,42 +98,42 @@ void database_loop() {
                 int status_code = doc["status_code"];
                 const char* message = doc["message"];
 
-                JsonObject data_sumatra_utara_tower_pandan = doc["data"]["sumatra_utara"]["tower_pandan"];
-                bool data_sumatra_utara_tower_pandan_test = data_sumatra_utara_tower_pandan["test"];
-                bool data_sumatra_utara_tower_pandan_real = data_sumatra_utara_tower_pandan["real"];
-                bool data_sumatra_utara_tower_pandan_spare = data_sumatra_utara_tower_pandan["spare"];
-                const char* data_sumatra_utara_tower_pandan_date_time = data_sumatra_utara_tower_pandan["date_time"];
-                bool data_sumatra_utara_tower_pandan_on = data_sumatra_utara_tower_pandan["on"];
+                JsonObject data_demonstration_tower_demo = doc["data"]["demonstration"]["tower_demo"];
+                bool data_demonstration_tower_demo_test = data_demonstration_tower_demo["test"];
+                bool data_demonstration_tower_demo_real = data_demonstration_tower_demo["real"];
+                bool data_demonstration_tower_demo_spare = data_demonstration_tower_demo["spare"];
+                const char* data_demonstration_tower_demo_date_time = data_demonstration_tower_demo["date_time"];
+                bool data_demonstration_tower_demo_on = data_demonstration_tower_demo["on"];
                 
                 Serial.println("Siren Activator");
                 Serial.print("test  : ");
-                Serial.println(data_sumatra_utara_tower_pandan_test);
+                Serial.println(data_demonstration_tower_demo_test);
                 Serial.print("real  : ");
-                Serial.println(data_sumatra_utara_tower_pandan_real);
+                Serial.println(data_demonstration_tower_demo_real);
                 Serial.print("spare : ");
-                Serial.println(data_sumatra_utara_tower_pandan_spare);
+                Serial.println(data_demonstration_tower_demo_spare);
                 Serial.print("date_time : ");
-                Serial.println(data_sumatra_utara_tower_pandan_date_time);
+                Serial.println(data_demonstration_tower_demo_date_time);
                 Serial.print("status : ");
-                Serial.println(data_sumatra_utara_tower_pandan_on);
+                Serial.println(data_demonstration_tower_demo_on);
                 Serial.println();
 
-                if(data_sumatra_utara_tower_pandan_spare==1) {
+                if(data_demonstration_tower_demo_spare==1) {
                     digitalWrite(spare,HIGH);
                 } else {
                     digitalWrite(spare,LOW);
                 }
 
                 if(DFPlayer_status=="LOW") {
-                    if(data_sumatra_utara_tower_pandan_test==1 && data_sumatra_utara_tower_pandan_real==0) {
+                    if(data_demonstration_tower_demo_test==1 && data_demonstration_tower_demo_real==0) {
                         DFPlayer.play(2);
                         DFPlayer_status = "HIGH";
-                    } else if(data_sumatra_utara_tower_pandan_test==0 && data_sumatra_utara_tower_pandan_real==1)  {
+                    } else if(data_demonstration_tower_demo_test==0 && data_demonstration_tower_demo_real==1)  {
                         DFPlayer.play(3);
                         DFPlayer_status = "HIGH";
                     } 
                 }
-                if(data_sumatra_utara_tower_pandan_test==0 && data_sumatra_utara_tower_pandan_real==0) {
+                if(data_demonstration_tower_demo_test==0 && data_demonstration_tower_demo_real==0) {
                     DFPlayer.pause();
                     DFPlayer_status = "LOW";
                 }
@@ -143,7 +143,7 @@ void database_loop() {
                 i = true;
             } else {
                 digitalWrite(inet,HIGH);
-                client.println("POST /api/v1/esp32/send-data?province=sumatra_utara&site=tower_pandan&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.1");
+                client.println("POST /api/v1/esp32/send-data?province=demonstration&site=tower_demo&primary_voltage="+(String)primary_voltage_value+"&secondary_voltage="+(String)secondary_voltage_value+"&accu_voltage="+(String)accu_voltage_value+"&temp="+(String)temp_value+"&data_rate="+(String)rate+"&date="+(String)rtcday+"/"+(String)rtcmonth+"/"+(String)rtcyear+"&time="+(String)rtchour+":"+(String)rtcminute+":"+(String)rtcsecond+" HTTP/1.0");
                 client.println("Host: semarsiren.id");
                 client.println("Connection: close");
                 client.println();
